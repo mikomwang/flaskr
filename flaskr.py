@@ -1,15 +1,19 @@
 import sqlite3
+import os 
 from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 from contextlib import closing
 
-DATABASE = '/tmp/flaskr.db'
-DEBUG = True
-SECRET_KEY = 'development key'
-USERNAME = 'admin'
-PASSWORD = 'default'
-
 app = Flask(__name__)
-app.config.from_envvar('FLASKR SETTINGS', silent = True)
+
+app.config.update(dict(
+    DATABASE=os.path.join(app.root_path, 'flaskr.db'),
+    DEBUG=True,
+    SECRET_KEY='development key',
+    USERNAME='admin',
+    PASSWORD='default'
+))
+
+app.config.from_envvar('FLASKR_SETTINGS', silent = True)
 
 def connect_db():
     return sqlite3.connect(app.config['DATABASE'])
@@ -34,7 +38,7 @@ def teardown_request(exception):
 def show_entries():
     cur = g.db.execute('select title, text from entries order by id desc')
     entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    return render_template('show_entries.html', entries=entries)
+    return render_template('templates/show_entries.html', entries=entries)
 
 @app.route('/add', methods=['POST'])
 def add_entry():
